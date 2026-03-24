@@ -1,0 +1,84 @@
+<resources>
+    <string name="app_name">Habit Tracker</string>
+    
+    <!-- Navigation -->
+    <string name="nav_home">Home</string>
+    <string name="nav_calendar">Calendar</string>
+    <string name="nav_analytics">Analytics</string>
+    <string name="nav_settings">Settings</string>
+    
+    <!-- Home Screen -->
+    <string name="good_morning">Good Morning</string>
+    <string name="good_afternoon">Good Afternoon</string>
+    <string name="good_evening">Good Evening</string>
+    <string name="todays_habits">Today\'s Habits</string>
+    <string name="no_habits_yet">No habits yet</string>
+    <string name="add_first_habit">Start building positive habits by adding your first one!</string>
+    
+    <!-- Habit Form -->
+    <string name="add_habit">Add Habit</string>
+    <string name="edit_habit">Edit Habit</string>
+    <string name="habit_name">Habit Name</string>
+    <string name="habit_description">Description (optional)</string>
+    <string name="choose_icon">Choose Icon</string>
+    <string name="choose_color">Choose Color</string>
+    <string name="frequency">Frequency</string>
+    <string name="daily">Daily</string>
+    <string name="weekly">Weekly</string>
+    <string name="custom">Custom</string>
+    <string name="select_days">Select Days</string>
+    <string name="reminder">Reminder (optional)</string>
+    <string name="set_reminder_time">Set reminder time</string>
+    <string name="save">Save</string>
+    <string name="cancel">Cancel</string>
+    
+    <!-- Habit Detail -->
+    <string name="habit_details">Habit Details</string>
+    <string name="recent_activity">Recent Activity</string>
+    <string name="thirty_day_rate">30-Day Rate</string>
+    <string name="current_streak">Current</string>
+    <string name="best_streak">Best</string>
+    <string name="archive">Archive</string>
+    <string name="unarchive">Unarchive</string>
+    <string name="delete">Delete</string>
+    <string name="delete_habit_confirm">This will permanently delete this habit and all its history. This action cannot be undone.</string>
+    
+    <!-- Calendar -->
+    <string name="completed">completed</string>
+    
+    <!-- Analytics -->
+    <string name="period_7_days">7 days</string>
+    <string name="period_14_days">14 days</string>
+    <string name="period_30_days">30 days</string>
+    <string name="period_90_days">90 days</string>
+    <string name="completion">Completion</string>
+    <string name="active_habits">Active Habits</string>
+    <string name="daily_completion">Daily Completion</string>
+    <string name="habit_breakdown">Habit Breakdown</string>
+    
+    <!-- Settings -->
+    <string name="appearance">Appearance</string>
+    <string name="dark_mode">Dark Mode</string>
+    <string name="behavior">Behavior</string>
+    <string name="notifications">Notifications</string>
+    <string name="haptic_feedback">Haptic Feedback</string>
+    <string name="streak_freeze">Streak Freeze</string>
+    <string name="data">Data</string>
+    <string name="archived_habits">Archived Habits</string>
+    <string name="export_data">Export Data</string>
+    <string name="import_data">Import Data</string>
+    <string name="about">About</string>
+    <string name="version">Version</string>
+    <string name="privacy">Privacy</string>
+    
+    <!-- Notifications -->
+    <string name="notification_channel_name">Habit Reminders</string>
+    <string name="notification_channel_description">Reminders for your daily habits</string>
+    <string name="habit_reminder">Habit Reminder</string>
+    <string name="time_to_complete">Time to complete: %s</string>
+    
+    <!-- Errors -->
+    <string name="error_name_required">Name is required</string>
+    <string name="error_select_day">Please select at least one day</string>
+    <string name="error_generic">Something went wrong</string>
+</resources>
