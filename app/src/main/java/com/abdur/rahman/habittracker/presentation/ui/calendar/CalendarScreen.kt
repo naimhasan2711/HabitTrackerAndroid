@@ -36,55 +36,46 @@ fun CalendarScreen(
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     
-    Scaffold(
-        topBar = {
-            TopAppBar(
-                title = { 
-                    Text(
-                        text = "Calendar",
-                        style = MaterialTheme.typography.headlineSmall,
-                        fontWeight = FontWeight.Bold
-                    )
-                },
-                colors = TopAppBarDefaults.topAppBarColors(
-                    containerColor = MaterialTheme.colorScheme.background
-                )
+    if (uiState.isLoading) {
+        LoadingScreen()
+    } else {
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(top = 8.dp)
+        ) {
+            // Screen title
+            Text(
+                text = "Calendar",
+                style = MaterialTheme.typography.headlineSmall,
+                fontWeight = FontWeight.Bold,
+                modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp)
             )
-        }
-    ) { paddingValues ->
-        if (uiState.isLoading) {
-            LoadingScreen(modifier = Modifier.padding(paddingValues))
-        } else {
-            Column(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .padding(paddingValues)
-            ) {
-                // Month navigation
-                MonthHeader(
-                    currentMonth = uiState.currentMonth,
-                    onPreviousMonth = viewModel::navigateToPreviousMonth,
-                    onNextMonth = viewModel::navigateToNextMonth
-                )
-                
-                // Calendar grid
-                CalendarGrid(
-                    currentMonth = uiState.currentMonth,
-                    selectedDate = uiState.selectedDate,
-                    completionByDate = uiState.completionByDate,
-                    onDateSelected = viewModel::selectDate
-                )
-                
-                HorizontalDivider(modifier = Modifier.padding(vertical = 16.dp))
-                
-                // Selected date info
-                SelectedDateInfo(
-                    selectedDate = uiState.selectedDate,
-                    habits = uiState.habits,
-                    logs = uiState.logsForSelectedDate,
-                    onHabitClick = onNavigateToHabitDetail
-                )
-            }
+            
+            // Month navigation
+            MonthHeader(
+                currentMonth = uiState.currentMonth,
+                onPreviousMonth = viewModel::navigateToPreviousMonth,
+                onNextMonth = viewModel::navigateToNextMonth
+            )
+            
+            // Calendar grid
+            CalendarGrid(
+                currentMonth = uiState.currentMonth,
+                selectedDate = uiState.selectedDate,
+                completionByDate = uiState.completionByDate,
+                onDateSelected = viewModel::selectDate
+            )
+            
+            HorizontalDivider(modifier = Modifier.padding(vertical = 16.dp))
+            
+            // Selected date info
+            SelectedDateInfo(
+                selectedDate = uiState.selectedDate,
+                habits = uiState.habits,
+                logs = uiState.logsForSelectedDate,
+                onHabitClick = onNavigateToHabitDetail
+            )
         }
     }
 }

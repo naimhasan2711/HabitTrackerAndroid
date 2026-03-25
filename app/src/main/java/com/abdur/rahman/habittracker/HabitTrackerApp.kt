@@ -4,10 +4,17 @@ import android.app.Application
 import android.app.NotificationChannel
 import android.app.NotificationManager
 import android.os.Build
+import androidx.hilt.work.HiltWorkerFactory
+import androidx.work.Configuration
+import com.abdur.rahman.habittracker.notification.HabitReminderService
 import dagger.hilt.android.HiltAndroidApp
+import javax.inject.Inject
 
 @HiltAndroidApp
-class HabitTrackerApp : Application() {
+class HabitTrackerApp : Application(), Configuration.Provider {
+    
+    @Inject
+    lateinit var workerFactory: HiltWorkerFactory
     
     companion object {
         const val NOTIFICATION_CHANNEL_ID = "habit_reminders"
@@ -17,7 +24,15 @@ class HabitTrackerApp : Application() {
     override fun onCreate() {
         super.onCreate()
         createNotificationChannel()
+        
+        // Start the foreground service for persistent reminders
+        HabitReminderService.startService(this)
     }
+    
+    override val workManagerConfiguration: Configuration
+        get() = Configuration.Builder()
+            .setWorkerFactory(workerFactory)
+            .build()
     
     private fun createNotificationChannel() {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {

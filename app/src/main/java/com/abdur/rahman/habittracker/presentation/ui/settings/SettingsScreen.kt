@@ -43,41 +43,35 @@ fun SettingsScreen(
         uri?.let { viewModel.importData(context, it) }
     }
     
-    Scaffold(
-        topBar = {
-            TopAppBar(
-                title = { 
-                    Text(
-                        text = "Settings",
-                        style = MaterialTheme.typography.headlineSmall,
-                        fontWeight = FontWeight.Bold
-                    ) 
-                },
-                colors = TopAppBarDefaults.topAppBarColors(
-                    containerColor = MaterialTheme.colorScheme.background
-                )
+    LazyColumn(
+        modifier = Modifier
+            .fillMaxSize()
+            .padding(top = 8.dp),
+        contentPadding = PaddingValues(vertical = 8.dp)
+    ) {
+        // Screen title
+        item {
+            Text(
+                text = "Settings",
+                style = MaterialTheme.typography.headlineSmall,
+                fontWeight = FontWeight.Bold,
+                modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp)
             )
         }
-    ) { paddingValues ->
-        LazyColumn(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(paddingValues),
-            contentPadding = PaddingValues(vertical = 8.dp)
-        ) {
-            // Appearance Section
-            item {
-                SettingsSection(title = "Appearance")
-            }
-            
-            item {
-                SwitchSettingItem(
-                    icon = Icons.Default.DarkMode,
-                    title = "Dark Mode",
-                    subtitle = "Follow system theme or toggle manually",
-                    checked = uiState.darkMode,
-                    onCheckedChange = viewModel::toggleDarkMode
-                )
+        
+        // Appearance Section
+        item {
+            SettingsSection(title = "Appearance")
+        }
+        
+        item {
+            SwitchSettingItem(
+                icon = Icons.Default.DarkMode,
+                title = "Dark Mode",
+                subtitle = "Follow system theme or toggle manually",
+                checked = uiState.darkMode,
+                onCheckedChange = viewModel::toggleDarkMode
+            )
             }
             
             // Behavior Section
@@ -170,7 +164,6 @@ fun SettingsScreen(
                 )
             }
         }
-    }
     
     // Show snackbar for export/import status
     uiState.message?.let { message ->

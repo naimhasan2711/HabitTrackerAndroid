@@ -34,41 +34,34 @@ fun AnalyticsScreen(
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     
-    Scaffold(
-        topBar = {
-            TopAppBar(
-                title = { 
-                    Text(
-                        text = "Analytics",
-                        style = MaterialTheme.typography.headlineSmall,
-                        fontWeight = FontWeight.Bold
-                    ) 
-                },
-                colors = TopAppBarDefaults.topAppBarColors(
-                    containerColor = MaterialTheme.colorScheme.background
+    if (uiState.isLoading && uiState.analyticsData == null) {
+        LoadingScreen()
+    } else {
+        LazyColumn(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(top = 8.dp),
+            contentPadding = PaddingValues(16.dp),
+            verticalArrangement = Arrangement.spacedBy(16.dp)
+        ) {
+            // Screen title
+            item {
+                Text(
+                    text = "Analytics",
+                    style = MaterialTheme.typography.headlineSmall,
+                    fontWeight = FontWeight.Bold
                 )
-            )
-        }
-    ) { paddingValues ->
-        if (uiState.isLoading && uiState.analyticsData == null) {
-            LoadingScreen(modifier = Modifier.padding(paddingValues))
-        } else {
-            LazyColumn(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .padding(paddingValues),
-                contentPadding = PaddingValues(16.dp),
-                verticalArrangement = Arrangement.spacedBy(16.dp)
-            ) {
-                // Period selector
-                item {
-                    PeriodSelector(
-                        selectedPeriod = uiState.selectedPeriod,
-                        onPeriodSelected = viewModel::selectPeriod
-                    )
-                }
-                
-                uiState.analyticsData?.let { data ->
+            }
+            
+            // Period selector
+            item {
+                PeriodSelector(
+                    selectedPeriod = uiState.selectedPeriod,
+                    onPeriodSelected = viewModel::selectPeriod
+                )
+            }
+            
+            uiState.analyticsData?.let { data ->
                     // Overview card
                     item {
                         OverviewCard(
@@ -100,7 +93,6 @@ fun AnalyticsScreen(
                 }
             }
         }
-    }
 }
 
 @Composable

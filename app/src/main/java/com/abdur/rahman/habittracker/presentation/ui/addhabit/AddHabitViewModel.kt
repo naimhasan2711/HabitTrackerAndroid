@@ -1,9 +1,11 @@
 package com.abdur.rahman.habittracker.presentation.ui.addhabit
 
+import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.abdur.rahman.habittracker.domain.model.Habit
 import com.abdur.rahman.habittracker.domain.usecase.CreateHabitUseCase
+import com.abdur.rahman.habittracker.notification.NotificationHelper
 import com.abdur.rahman.habittracker.shared.utils.DateUtils
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -16,8 +18,13 @@ import javax.inject.Inject
 
 @HiltViewModel
 class AddHabitViewModel @Inject constructor(
-    private val createHabitUseCase: CreateHabitUseCase
+    private val createHabitUseCase: CreateHabitUseCase,
+    private val notificationHelper: NotificationHelper
 ) : ViewModel() {
+    
+    companion object {
+        private const val TAG = "AddHabitViewModel"
+    }
     
     private val _uiState = MutableStateFlow(AddHabitUiState())
     val uiState: StateFlow<AddHabitUiState> = _uiState.asStateFlow()
@@ -81,6 +88,13 @@ class AddHabitViewModel @Inject constructor(
                 )
                 
                 createHabitUseCase(habit)
+                
+                // Schedule reminder if reminder time is set
+                if (habit.reminderTime != null) {
+                    Log.d(TAG, "Scheduling reminder for new habit: ${habit.name} at ${habit.reminderTime}")
+                    notificationHelper.scheduleHabitReminder(habit)
+                }
+                
                 _uiState.update { it.copy(isLoading = false, isSaved = true) }
             } catch (e: Exception) {
                 _uiState.update { it.copy(isLoading = false, error = e.message) }

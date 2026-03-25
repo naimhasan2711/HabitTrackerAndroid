@@ -9,6 +9,7 @@ import com.abdur.rahman.habittracker.domain.usecase.ArchiveHabitUseCase
 import com.abdur.rahman.habittracker.domain.usecase.DeleteHabitUseCase
 import com.abdur.rahman.habittracker.domain.usecase.GetHabitByIdUseCase
 import com.abdur.rahman.habittracker.domain.usecase.GetHabitLogsInRangeUseCase
+import com.abdur.rahman.habittracker.domain.usecase.ToggleHabitCompletionUseCase
 import com.abdur.rahman.habittracker.shared.utils.DateUtils
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -35,7 +36,8 @@ class HabitDetailViewModel @Inject constructor(
     private val getHabitByIdUseCase: GetHabitByIdUseCase,
     private val getHabitLogsInRangeUseCase: GetHabitLogsInRangeUseCase,
     private val deleteHabitUseCase: DeleteHabitUseCase,
-    private val archiveHabitUseCase: ArchiveHabitUseCase
+    private val archiveHabitUseCase: ArchiveHabitUseCase,
+    private val toggleHabitCompletionUseCase: ToggleHabitCompletionUseCase
 ) : ViewModel() {
     
     private val habitId: String = checkNotNull(savedStateHandle["habitId"])
@@ -93,6 +95,16 @@ class HabitDetailViewModel @Inject constructor(
         viewModelScope.launch {
             try {
                 archiveHabitUseCase(habitId, !habit.archived)
+            } catch (e: Exception) {
+                _uiState.update { it.copy(error = e.message) }
+            }
+        }
+    }
+    
+    fun toggleHabitCompletion() {
+        viewModelScope.launch {
+            try {
+                toggleHabitCompletionUseCase(habitId)
             } catch (e: Exception) {
                 _uiState.update { it.copy(error = e.message) }
             }

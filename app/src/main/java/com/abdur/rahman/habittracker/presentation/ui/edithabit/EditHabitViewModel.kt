@@ -1,11 +1,13 @@
 package com.abdur.rahman.habittracker.presentation.ui.edithabit
 
+import android.util.Log
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.abdur.rahman.habittracker.domain.model.Habit
 import com.abdur.rahman.habittracker.domain.usecase.GetHabitByIdUseCase
 import com.abdur.rahman.habittracker.domain.usecase.UpdateHabitUseCase
+import com.abdur.rahman.habittracker.notification.NotificationHelper
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -35,8 +37,13 @@ data class EditHabitUiState(
 class EditHabitViewModel @Inject constructor(
     savedStateHandle: SavedStateHandle,
     private val getHabitByIdUseCase: GetHabitByIdUseCase,
-    private val updateHabitUseCase: UpdateHabitUseCase
+    private val updateHabitUseCase: UpdateHabitUseCase,
+    private val notificationHelper: NotificationHelper
 ) : ViewModel() {
+    
+    companion object {
+        private const val TAG = "EditHabitViewModel"
+    }
     
     private val habitId: String = checkNotNull(savedStateHandle["habitId"])
     
@@ -127,6 +134,16 @@ class EditHabitViewModel @Inject constructor(
                 )
                 
                 updateHabitUseCase(updatedHabit)
+                
+                // Update reminder scheduling
+                if (updatedHabit.reminderTime != null) {
+                    Log.d(TAG, "Scheduling reminder for updated habit: ${updatedHabit.name} at ${updatedHabit.reminderTime}")
+                    notificationHelper.scheduleHabitReminder(updatedHabit)
+                } else {
+                    Log.d(TAG, "Cancelling reminder for habit: ${updatedHabit.name} (no reminder time set)")
+                    notificationHelper.cancelHabitReminder(updatedHabit.id)
+                }
+                
                 _uiState.update { it.copy(isLoading = false, isSaved = true) }
             } catch (e: Exception) {
                 _uiState.update { it.copy(isLoading = false, error = e.message) }

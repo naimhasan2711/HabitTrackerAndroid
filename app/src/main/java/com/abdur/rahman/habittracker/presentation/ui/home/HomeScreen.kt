@@ -44,9 +44,6 @@ fun HomeScreen(
     }
     
     Scaffold(
-        topBar = {
-            HomeTopBar()
-        },
         floatingActionButton = {
             FloatingActionButton(
                 onClick = onNavigateToAddHabit,
@@ -100,23 +97,6 @@ fun HomeScreen(
             viewModel.clearError()
         }
     }
-}
-
-@OptIn(ExperimentalMaterial3Api::class)
-@Composable
-private fun HomeTopBar() {
-    TopAppBar(
-        title = {
-            Text(
-                text = "Habit Tracker",
-                style = MaterialTheme.typography.headlineSmall,
-                fontWeight = FontWeight.Bold
-            )
-        },
-        colors = TopAppBarDefaults.topAppBarColors(
-            containerColor = MaterialTheme.colorScheme.background
-        )
-    )
 }
 
 @Composable

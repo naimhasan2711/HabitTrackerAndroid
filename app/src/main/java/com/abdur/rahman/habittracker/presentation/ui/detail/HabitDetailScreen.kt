@@ -94,7 +94,8 @@ fun HabitDetailScreen(
                             // Completion Status Card
                             CompletionStatusCard(
                                 isCompletedToday = habit.isCompletedToday,
-                                habitColor = habitColor
+                                habitColor = habitColor,
+                                onToggleComplete = { viewModel.toggleHabitCompletion() }
                             )
                             
                             // Stats Grid (2x2)
@@ -118,7 +119,10 @@ fun HabitDetailScreen(
                             
                             // Daily Reminder
                             habit.reminderTime?.let { reminderTime ->
-                                ReminderSection(reminderTime = reminderTime)
+                                ReminderSection(
+                                    reminderTime = reminderTime,
+                                    frequency = habit.frequency
+                                )
                             }
                             
                             // Created Date
@@ -302,7 +306,8 @@ private fun HabitDetailHeader(
 @Composable
 private fun CompletionStatusCard(
     isCompletedToday: Boolean,
-    habitColor: Color
+    habitColor: Color,
+    onToggleComplete: () -> Unit
 ) {
     Card(
         modifier = Modifier.fillMaxWidth(),
@@ -316,37 +321,66 @@ private fun CompletionStatusCard(
                 .fillMaxWidth()
                 .padding(16.dp),
             verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.spacedBy(16.dp)
+            horizontalArrangement = Arrangement.SpaceBetween
         ) {
-            // Checkmark icon
-            Box(
-                modifier = Modifier
-                    .size(56.dp)
-                    .clip(RoundedCornerShape(16.dp))
-                    .background(
-                        if (isCompletedToday) habitColor
-                        else MaterialTheme.colorScheme.surfaceVariant
-                    ),
-                contentAlignment = Alignment.Center
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.spacedBy(16.dp),
+                modifier = Modifier.weight(1f)
             ) {
-                Icon(
-                    imageVector = if (isCompletedToday) Icons.Default.Check else Icons.Default.Close,
-                    contentDescription = null,
-                    tint = if (isCompletedToday) Color.White else MaterialTheme.colorScheme.onSurfaceVariant,
-                    modifier = Modifier.size(32.dp)
-                )
+                // Checkmark icon
+                Box(
+                    modifier = Modifier
+                        .size(56.dp)
+                        .clip(RoundedCornerShape(16.dp))
+                        .background(
+                            if (isCompletedToday) habitColor
+                            else MaterialTheme.colorScheme.surfaceVariant
+                        ),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Icon(
+                        imageVector = if (isCompletedToday) Icons.Default.Check else Icons.Default.Close,
+                        contentDescription = null,
+                        tint = if (isCompletedToday) Color.White else MaterialTheme.colorScheme.onSurfaceVariant,
+                        modifier = Modifier.size(32.dp)
+                    )
+                }
+                
+                Column {
+                    Text(
+                        text = if (isCompletedToday) "Completed Today" else "Not Completed",
+                        style = MaterialTheme.typography.titleMedium,
+                        fontWeight = FontWeight.SemiBold
+                    )
+                    Text(
+                        text = if (isCompletedToday) "Great job!" else "You can do it!",
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                }
             }
             
-            Column {
-                Text(
-                    text = if (isCompletedToday) "Completed Today" else "Not Completed",
-                    style = MaterialTheme.typography.titleMedium,
-                    fontWeight = FontWeight.SemiBold
+            // Toggle completion button
+            FilledTonalButton(
+                onClick = onToggleComplete,
+                colors = ButtonDefaults.filledTonalButtonColors(
+                    containerColor = if (isCompletedToday) 
+                        MaterialTheme.colorScheme.errorContainer 
+                    else habitColor,
+                    contentColor = if (isCompletedToday) 
+                        MaterialTheme.colorScheme.onErrorContainer 
+                    else Color.White
                 )
+            ) {
+                Icon(
+                    imageVector = if (isCompletedToday) Icons.Default.Close else Icons.Default.Check,
+                    contentDescription = null,
+                    modifier = Modifier.size(18.dp)
+                )
+                Spacer(modifier = Modifier.width(4.dp))
                 Text(
-                    text = if (isCompletedToday) "Great job!" else "You can do it!",
-                    style = MaterialTheme.typography.bodyMedium,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                    text = if (isCompletedToday) "Undo" else "Done"
                 )
             }
         }
@@ -544,7 +578,17 @@ private fun DayIndicator(
 }
 
 @Composable
-private fun ReminderSection(reminderTime: String) {
+private fun ReminderSection(
+    reminderTime: String,
+    frequency: String
+) {
+    val reminderLabel = when (frequency) {
+        "daily" -> "Daily Reminder"
+        "weekly" -> "Weekly Reminder"
+        "custom" -> "Custom Reminder"
+        else -> "Reminder"
+    }
+    
     Card(
         modifier = Modifier.fillMaxWidth(),
         colors = CardDefaults.cardColors(
@@ -568,7 +612,7 @@ private fun ReminderSection(reminderTime: String) {
             
             Column {
                 Text(
-                    text = "Daily Reminder",
+                    text = reminderLabel,
                     style = MaterialTheme.typography.titleMedium,
                     fontWeight = FontWeight.SemiBold
                 )
@@ -586,8 +630,14 @@ private fun ReminderSection(reminderTime: String) {
 private fun CreatedDateSection(createdAt: String) {
     val formattedDate = remember(createdAt) {
         try {
-            val date = LocalDate.parse(createdAt)
-            date.format(DateTimeFormatter.ofPattern("MMM d, yyyy"))
+            // Try parsing as LocalDateTime first (ISO format with time)
+            val dateTime = try {
+                java.time.LocalDateTime.parse(createdAt)
+            } catch (e: Exception) {
+                // If that fails, try parsing as LocalDate and add midnight time
+                LocalDate.parse(createdAt).atStartOfDay()
+            }
+            dateTime.format(DateTimeFormatter.ofPattern("dd-MM-yyyy hh:mm:ss a"))
         } catch (e: Exception) {
             createdAt
         }
