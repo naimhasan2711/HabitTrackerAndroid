@@ -76,7 +76,6 @@ A privacy-focused, fully offline habit tracking Android application built with m
 
 <p align="center">
   <img src="screenshots/Screenshot_20260325_153401.jpg" width="200" alt="Home Screen"/>
-  <img src="screenshots/Screenshot_20260325_153409.jpg" width="200" alt="Home Screen with Habits"/>
   <img src="screenshots/Screenshot_20260325_153413.jpg" width="200" alt="Navigation"/>
 </p>
 
@@ -158,7 +157,7 @@ The app follows **Clean Architecture** principles with clear separation between 
 
 ```
 ┌──────────────────────────────────────────────────────────────────────────────┐
-│                           PRESENTATION LAYER                                  │
+│                           PRESENTATION LAYER                                 │
 │  ┌──────────────────┐  ┌──────────────────┐  ┌─────────────────────────────┐ │
 │  │     Screens      │  │    ViewModels    │  │        Components           │ │
 │  │   (Composables)  │  │   (StateFlow)    │  │     (Reusable UI)           │ │
@@ -173,7 +172,7 @@ The app follows **Clean Architecture** principles with clear separation between 
                                     │
                                     ▼
 ┌──────────────────────────────────────────────────────────────────────────────┐
-│                             DOMAIN LAYER                                      │
+│                             DOMAIN LAYER                                     │
 │  ┌──────────────────┐  ┌──────────────────┐  ┌─────────────────────────────┐ │
 │  │     Models       │  │    Use Cases     │  │   Repository Interfaces     │ │
 │  │                  │  │                  │  │                             │ │
@@ -187,7 +186,7 @@ The app follows **Clean Architecture** principles with clear separation between 
                                     │
                                     ▼
 ┌──────────────────────────────────────────────────────────────────────────────┐
-│                              DATA LAYER                                       │
+│                              DATA LAYER                                      │
 │  ┌──────────────────┐  ┌──────────────────┐  ┌─────────────────────────────┐ │
 │  │    Room DAOs     │  │   Repositories   │  │         Entities            │ │
 │  │                  │  │ (Implementations)│  │                             │ │
@@ -702,7 +701,7 @@ SOFTWARE.
 
 **Nakibul Hassan**
 
-- GitHub: [@nakibulhassan](https://github.com/nakibulhassan)
+- Email: nakibhasan2711@gmail.com
 
 ---
 
