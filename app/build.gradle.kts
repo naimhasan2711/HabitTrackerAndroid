@@ -8,11 +8,11 @@ plugins {
 }
 
 android {
-    namespace = "com.abdur.rahman.habittracker"
+    namespace = "com.nakibul.hassan.habittracker"
     compileSdk = 36
 
     defaultConfig {
-        applicationId = "com.abdur.rahman.habittracker"
+        applicationId = "com.nakibul.hassan.habittracker"
         minSdk = 29
         targetSdk = 36
         versionCode = 1
