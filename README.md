@@ -75,31 +75,34 @@ A privacy-focused, fully offline habit tracking Android application built with m
 ### Home & Navigation
 
 <p align="center">
-  <img src="screenshots/Screenshot_20260325_153401.jpg" width="200" alt="Home Screen"/>
-  <img src="screenshots/Screenshot_20260325_153413.jpg" width="200" alt="Navigation"/>
+  <img src="screenshots/home_1.jpg" width="200" alt="Home Screen"/>
+  <img src="screenshots/home_2.jpg" width="200" alt="Home Screen"/>
+  <img src="screenshots/home_3.jpg" width="200" alt="Home Screen"/>
 </p>
 
 ### Habit Management
 
 <p align="center">
-  <img src="screenshots/Screenshot_20260325_153419.jpg" width="200" alt="Add Habit"/>
-  <img src="screenshots/Screenshot_20260325_153424.jpg" width="200" alt="Edit Habit"/>
-  <img src="screenshots/Screenshot_20260325_153446.jpg" width="200" alt="Habit Detail"/>
+  <img src="screenshots/analytic.jpg" width="200" alt="Home Screen"/>
+  <img src="screenshots/analytic-2.jpg" width="200" alt="Home Screen"/>
+  <img src="screenshots/input.jpg" width="200" alt="Home Screen"/>
+  <img src="screenshots/detail-1.jpg" width="200" alt="Home Screen"/>
+  <img src="screenshots/detail-2.jpg" width="200" alt="Home Screen"/>
 </p>
 
-### Calendar & Analytics
+### Calendar & Clock
 
 <p align="center">
-  <img src="screenshots/Screenshot_20260325_153456.jpg" width="200" alt="Calendar View"/>
-  <img src="screenshots/Screenshot_20260325_153503.jpg" width="200" alt="Analytics Dashboard"/>
-  <img src="screenshots/Screenshot_20260325_153506.jpg" width="200" alt="Analytics Charts"/>
+   <img src="screenshots/clock.jpg" width="200" alt="Home Screen"/>
+    <img src="screenshots/calender.jpg" width="200" alt="Home Screen"/>
+    <img src="screenshots/calender-2.jpg" width="200" alt="Home Screen"/>
 </p>
 
 ### Settings & More
 
 <p align="center">
-  <img src="screenshots/Screenshot_20260325_153518.jpg" width="200" alt="Settings"/>
-  <img src="screenshots/Screenshot_20260325_153522.jpg" width="200" alt="Archived Habits"/>
+  <img src="screenshots/setting_1.jpg" width="200" alt="Home Screen"/>
+   <img src="screenshots/setting_2.jpg" width="200" alt="Home Screen"/>
 </p>
 
 ---
@@ -203,13 +206,13 @@ The app follows **Clean Architecture** principles with clear separation between 
 
 ```
 ┌─────────────┐     ┌───────────┐     ┌──────────┐     ┌───────────┐     ┌──────────┐
-│   User      │────▶│  Screen   │────▶│ ViewModel│────▶│  UseCase  │────▶│Repository│
+│   User      │─── ▶│  Screen   │────▶│ ViewModel│────▶│  UseCase  │────▶│Repository│
 │  Action     │     │(Composable)│    │(StateFlow)│    │ (Business)│     │  (Impl)  │
 └─────────────┘     └───────────┘     └──────────┘     └───────────┘     └──────────┘
                           ▲                                                    │
                           │                                                    ▼
                     ┌─────┴─────┐                                        ┌──────────┐
-                    │  UI State │◀───────────── Flow<T> ────────────────│   Room   │
+                    │  UI State │◀───────────── Flow<T>  ───────────────│   Room   │
                     │  Update   │                                        │ Database │
                     └───────────┘                                        └──────────┘
 ```
