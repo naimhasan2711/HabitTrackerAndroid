@@ -16,12 +16,14 @@ class ReminderScheduler @Inject constructor(
     
     companion object {
         private const val TAG = "ReminderScheduler"
+        private const val EARLY_REMINDER_OFFSET_MINUTES = 5L
     }
     
     private val workManager: WorkManager = WorkManager.getInstance(context)
     
     /**
      * Schedule a reminder for a habit based on its frequency
+     * This schedules both an early reminder (5 minutes before) and the main reminder
      */
     fun scheduleHabitReminder(habit: Habit) {
         Log.d(TAG, "====== SCHEDULING REMINDER START ======")
@@ -36,8 +38,8 @@ class ReminderScheduler @Inject constructor(
             return
         }
         
-        // Cancel any existing reminder for this habit
-        Log.d(TAG, "Cancelling any existing reminder for habit: ${habit.id}")
+        // Cancel any existing reminders for this habit (both early and main)
+        Log.d(TAG, "Cancelling any existing reminders for habit: ${habit.id}")
         cancelHabitReminder(habit.id)
         
         // Parse the reminder time (HH:mm format)
@@ -68,22 +70,61 @@ class ReminderScheduler @Inject constructor(
         val initialDelay = Duration.between(now, reminderDateTime).toMillis()
         Log.d(TAG, "Initial delay: ${initialDelay}ms (${initialDelay / 1000 / 60} minutes)")
         
-        val inputData = Data.Builder()
+        // Calculate early reminder delay (5 minutes before main reminder)
+        val earlyReminderDelay = initialDelay - TimeUnit.MINUTES.toMillis(EARLY_REMINDER_OFFSET_MINUTES)
+        val shouldScheduleEarlyReminder = earlyReminderDelay > 0
+        Log.d(TAG, "Early reminder delay: ${earlyReminderDelay}ms, shouldSchedule: $shouldScheduleEarlyReminder")
+        
+        // Input data for main reminder
+        val mainInputData = Data.Builder()
             .putString(ReminderWorker.KEY_HABIT_ID, habit.id)
             .putString(ReminderWorker.KEY_HABIT_NAME, habit.name)
+            .putBoolean(ReminderWorker.KEY_IS_EARLY_REMINDER, false)
+            .build()
+        
+        // Input data for early reminder
+        val earlyInputData = Data.Builder()
+            .putString(ReminderWorker.KEY_HABIT_ID, habit.id)
+            .putString(ReminderWorker.KEY_HABIT_NAME, habit.name)
+            .putBoolean(ReminderWorker.KEY_IS_EARLY_REMINDER, true)
             .build()
         
         // Schedule based on frequency
         when (habit.frequency) {
             "daily" -> {
                 Log.d(TAG, "Scheduling DAILY reminder with 1 day interval")
-                // Schedule repeating daily work
+                
+                // Schedule early reminder (5 minutes before)
+                if (shouldScheduleEarlyReminder) {
+                    val earlyWorkRequest = PeriodicWorkRequestBuilder<ReminderWorker>(
+                        repeatInterval = 1,
+                        repeatIntervalTimeUnit = TimeUnit.DAYS
+                    )
+                        .setInitialDelay(earlyReminderDelay, TimeUnit.MILLISECONDS)
+                        .setInputData(earlyInputData)
+                        .setConstraints(
+                            Constraints.Builder()
+                                .setRequiresBatteryNotLow(false)
+                                .build()
+                        )
+                        .addTag(getEarlyWorkTag(habit.id))
+                        .build()
+                    
+                    workManager.enqueueUniquePeriodicWork(
+                        getEarlyUniqueWorkName(habit.id),
+                        ExistingPeriodicWorkPolicy.UPDATE,
+                        earlyWorkRequest
+                    )
+                    Log.d(TAG, "Enqueued early daily work request: ${getEarlyUniqueWorkName(habit.id)}")
+                }
+                
+                // Schedule main reminder
                 val workRequest = PeriodicWorkRequestBuilder<ReminderWorker>(
                     repeatInterval = 1,
                     repeatIntervalTimeUnit = TimeUnit.DAYS
                 )
                     .setInitialDelay(initialDelay, TimeUnit.MILLISECONDS)
-                    .setInputData(inputData)
+                    .setInputData(mainInputData)
                     .setConstraints(
                         Constraints.Builder()
                             .setRequiresBatteryNotLow(false)
@@ -102,13 +143,38 @@ class ReminderScheduler @Inject constructor(
             
             "weekly" -> {
                 Log.d(TAG, "Scheduling WEEKLY reminder with 7 day interval")
-                // Schedule repeating weekly work
+                
+                // Schedule early reminder (5 minutes before)
+                if (shouldScheduleEarlyReminder) {
+                    val earlyWorkRequest = PeriodicWorkRequestBuilder<ReminderWorker>(
+                        repeatInterval = 7,
+                        repeatIntervalTimeUnit = TimeUnit.DAYS
+                    )
+                        .setInitialDelay(earlyReminderDelay, TimeUnit.MILLISECONDS)
+                        .setInputData(earlyInputData)
+                        .setConstraints(
+                            Constraints.Builder()
+                                .setRequiresBatteryNotLow(false)
+                                .build()
+                        )
+                        .addTag(getEarlyWorkTag(habit.id))
+                        .build()
+                    
+                    workManager.enqueueUniquePeriodicWork(
+                        getEarlyUniqueWorkName(habit.id),
+                        ExistingPeriodicWorkPolicy.UPDATE,
+                        earlyWorkRequest
+                    )
+                    Log.d(TAG, "Enqueued early weekly work request: ${getEarlyUniqueWorkName(habit.id)}")
+                }
+                
+                // Schedule main reminder
                 val workRequest = PeriodicWorkRequestBuilder<ReminderWorker>(
                     repeatInterval = 7,
                     repeatIntervalTimeUnit = TimeUnit.DAYS
                 )
                     .setInitialDelay(initialDelay, TimeUnit.MILLISECONDS)
-                    .setInputData(inputData)
+                    .setInputData(mainInputData)
                     .setConstraints(
                         Constraints.Builder()
                             .setRequiresBatteryNotLow(false)
@@ -127,13 +193,38 @@ class ReminderScheduler @Inject constructor(
             
             "custom" -> {
                 Log.d(TAG, "Scheduling CUSTOM reminder with 1 day interval (filter by day in worker)")
-                // For custom days, we schedule daily but the worker filters by day
+                
+                // Schedule early reminder (5 minutes before)
+                if (shouldScheduleEarlyReminder) {
+                    val earlyWorkRequest = PeriodicWorkRequestBuilder<ReminderWorker>(
+                        repeatInterval = 1,
+                        repeatIntervalTimeUnit = TimeUnit.DAYS
+                    )
+                        .setInitialDelay(earlyReminderDelay, TimeUnit.MILLISECONDS)
+                        .setInputData(earlyInputData)
+                        .setConstraints(
+                            Constraints.Builder()
+                                .setRequiresBatteryNotLow(false)
+                                .build()
+                        )
+                        .addTag(getEarlyWorkTag(habit.id))
+                        .build()
+                    
+                    workManager.enqueueUniquePeriodicWork(
+                        getEarlyUniqueWorkName(habit.id),
+                        ExistingPeriodicWorkPolicy.UPDATE,
+                        earlyWorkRequest
+                    )
+                    Log.d(TAG, "Enqueued early custom work request: ${getEarlyUniqueWorkName(habit.id)}")
+                }
+                
+                // Schedule main reminder
                 val workRequest = PeriodicWorkRequestBuilder<ReminderWorker>(
                     repeatInterval = 1,
                     repeatIntervalTimeUnit = TimeUnit.DAYS
                 )
                     .setInitialDelay(initialDelay, TimeUnit.MILLISECONDS)
-                    .setInputData(inputData)
+                    .setInputData(mainInputData)
                     .setConstraints(
                         Constraints.Builder()
                             .setRequiresBatteryNotLow(false)
@@ -163,13 +254,20 @@ class ReminderScheduler @Inject constructor(
     }
     
     /**
-     * Cancel a scheduled reminder for a habit
+     * Cancel a scheduled reminder for a habit (both early and main reminders)
      */
     fun cancelHabitReminder(habitId: String) {
-        Log.d(TAG, "Cancelling reminder for habit: $habitId")
+        Log.d(TAG, "Cancelling all reminders for habit: $habitId")
+        
+        // Cancel main reminder
         workManager.cancelUniqueWork(getUniqueWorkName(habitId))
         workManager.cancelAllWorkByTag(getWorkTag(habitId))
-        Log.d(TAG, "Cancelled work: ${getUniqueWorkName(habitId)}")
+        Log.d(TAG, "Cancelled main work: ${getUniqueWorkName(habitId)}")
+        
+        // Cancel early reminder
+        workManager.cancelUniqueWork(getEarlyUniqueWorkName(habitId))
+        workManager.cancelAllWorkByTag(getEarlyWorkTag(habitId))
+        Log.d(TAG, "Cancelled early work: ${getEarlyUniqueWorkName(habitId)}")
     }
     
     /**
@@ -193,6 +291,14 @@ class ReminderScheduler @Inject constructor(
     
     private fun getWorkTag(habitId: String): String {
         return "reminder_tag_$habitId"
+    }
+    
+    private fun getEarlyUniqueWorkName(habitId: String): String {
+        return "habit_early_reminder_$habitId"
+    }
+    
+    private fun getEarlyWorkTag(habitId: String): String {
+        return "early_reminder_tag_$habitId"
     }
 }
 

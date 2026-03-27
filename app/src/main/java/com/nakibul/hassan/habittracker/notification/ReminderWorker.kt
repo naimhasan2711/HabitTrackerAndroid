@@ -34,6 +34,7 @@ class ReminderWorker @AssistedInject constructor(
     companion object {
         const val KEY_HABIT_ID = "habit_id"
         const val KEY_HABIT_NAME = "habit_name"
+        const val KEY_IS_EARLY_REMINDER = "is_early_reminder"
         private const val TAG = "ReminderWorker"
     }
     
@@ -43,8 +44,9 @@ class ReminderWorker @AssistedInject constructor(
         
         val habitId = inputData.getString(KEY_HABIT_ID)
         val habitName = inputData.getString(KEY_HABIT_NAME)
+        val isEarlyReminder = inputData.getBoolean(KEY_IS_EARLY_REMINDER, false)
         
-        Log.d(TAG, "Input - Habit ID: $habitId, Habit Name: $habitName")
+        Log.d(TAG, "Input - Habit ID: $habitId, Habit Name: $habitName, Is Early: $isEarlyReminder")
         
         if (habitId == null) {
             Log.e(TAG, "Habit ID is null, failing work")
@@ -87,8 +89,8 @@ class ReminderWorker @AssistedInject constructor(
             }
             
             // Show notification
-            Log.d(TAG, "Showing reminder notification for: ${habitEntity.name}")
-            showReminderNotification(habitId, habitEntity.name)
+            Log.d(TAG, "Showing reminder notification for: ${habitEntity.name}, isEarly: $isEarlyReminder")
+            showReminderNotification(habitId, habitEntity.name, isEarlyReminder)
             
             Log.d(TAG, "====== REMINDER WORKER COMPLETED ======")
             return Result.success()
@@ -141,8 +143,8 @@ class ReminderWorker @AssistedInject constructor(
         return result
     }
     
-    private fun showReminderNotification(habitId: String, habitName: String) {
-        Log.d(TAG, "Showing notification for habit: $habitName (ID: $habitId)")
+    private fun showReminderNotification(habitId: String, habitName: String, isEarlyReminder: Boolean = false) {
+        Log.d(TAG, "Showing notification for habit: $habitName (ID: $habitId), Early: $isEarlyReminder")
         
         // Check notification permission for Android 13+
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
@@ -163,35 +165,60 @@ class ReminderWorker @AssistedInject constructor(
             putExtra("habitId", habitId)
         }
         
+        // Use different request codes for early vs main reminders
+        val requestCode = if (isEarlyReminder) habitId.hashCode() + 1 else habitId.hashCode()
+        
         val pendingIntent = PendingIntent.getActivity(
             context,
-            habitId.hashCode(),
+            requestCode,
             mainIntent,
             PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
         )
         
-        // Get default alarm sound
-        val alarmSound = RingtoneManager.getDefaultUri(RingtoneManager.TYPE_ALARM)
-            ?: RingtoneManager.getDefaultUri(RingtoneManager.TYPE_NOTIFICATION)
+        // Get appropriate sound - gentler for early reminder, stronger for main reminder
+        val alarmSound = if (isEarlyReminder) {
+            RingtoneManager.getDefaultUri(RingtoneManager.TYPE_NOTIFICATION)
+        } else {
+            RingtoneManager.getDefaultUri(RingtoneManager.TYPE_ALARM)
+                ?: RingtoneManager.getDefaultUri(RingtoneManager.TYPE_NOTIFICATION)
+        }
         
         Log.d(TAG, "Building notification with sound: $alarmSound")
         
+        // Different title and content for early vs main reminder
+        val title = if (isEarlyReminder) "Upcoming Habit" else "Habit Reminder"
+        val content = if (isEarlyReminder) {
+            "\"$habitName\" is due in 5 minutes!"
+        } else {
+            "Time to complete: $habitName"
+        }
+        
+        // Different vibration pattern - gentler for early reminder
+        val vibrationPattern = if (isEarlyReminder) {
+            longArrayOf(0, 300, 200, 300)
+        } else {
+            longArrayOf(0, 500, 200, 500, 200, 500)
+        }
+        
         val notification = NotificationCompat.Builder(context, HabitTrackerApp.NOTIFICATION_CHANNEL_ID)
             .setSmallIcon(R.drawable.habit)
-            .setContentTitle("Habit Reminder")
-            .setContentText("Time to complete: $habitName")
-            .setPriority(NotificationCompat.PRIORITY_HIGH)
-            .setCategory(NotificationCompat.CATEGORY_ALARM)
+            .setContentTitle(title)
+            .setContentText(content)
+            .setPriority(if (isEarlyReminder) NotificationCompat.PRIORITY_DEFAULT else NotificationCompat.PRIORITY_HIGH)
+            .setCategory(if (isEarlyReminder) NotificationCompat.CATEGORY_REMINDER else NotificationCompat.CATEGORY_ALARM)
             .setAutoCancel(true)
             .setContentIntent(pendingIntent)
             .setSound(alarmSound)
-            .setVibrate(longArrayOf(0, 500, 200, 500, 200, 500))
+            .setVibrate(vibrationPattern)
             .setDefaults(NotificationCompat.DEFAULT_LIGHTS)
             .build()
         
         val notificationManager = context.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
-        notificationManager.notify(habitId.hashCode(), notification)
-        Log.d(TAG, "Notification posted with ID: ${habitId.hashCode()}")
+        
+        // Use different notification IDs so early and main reminders don't override each other
+        val notificationId = if (isEarlyReminder) habitId.hashCode() + 10000 else habitId.hashCode()
+        notificationManager.notify(notificationId, notification)
+        Log.d(TAG, "Notification posted with ID: $notificationId")
     }
 }
 
